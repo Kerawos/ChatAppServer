@@ -2,6 +2,9 @@ package pl.mareksowa.SerwerChat.models;
 
 import org.springframework.web.socket.WebSocketSession;
 
+/**
+ * Class responsible for holding User Data
+ */
 public class UserModel {
 
     private String nick;

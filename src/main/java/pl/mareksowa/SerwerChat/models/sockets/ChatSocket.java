@@ -16,11 +16,14 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 
+
+/**
+ * Class responsible for chat logic
+ */
 @EnableWebSocket
 @Configuration
 public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigurer {
 
-    //mapa dla przechowywania id oraz usera
     Map<String, UserModel> userList = Collections.synchronizedMap(new HashMap<>());
 
     @Override
@@ -29,35 +32,27 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 .setAllowedOrigins("*");
     }
 
-    //ustanowiono polaczenie
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-//        session.sendMessage(new TextMessage("Hello!"));
-//        session.sendMessage(new TextMessage("Your first message will be your nick"));
-        //dodajemy id i nowego usera
-        userList.put(session.getId(), new UserModel(session));
+        userList.put(session.getId(), new UserModel(session)); //add new User by ID
     }
 
-    //przychodzi wiadomosc
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        UserModel userModel = userList.get(session.getId()); // pobieramy ID
-        Type factory = new TypeToken<MessageFactory>() {
-        }.getType(); // uruchamiamy fabryke
-        //konwertujmy jsona na nasz obiekt
+        UserModel userModel = userList.get(session.getId());
+        Type factory = new TypeToken<MessageFactory>() {}.getType();
+        //pack message to Json format
         MessageFactory factoryCreated = MessageFactory.GSON.fromJson(message.getPayload(), factory);
         MessageFactory factoryNewMessage;
 
-        //sprawdzamy jaki typ wiadomosci zawiera nasz obiekt
         switch (factoryCreated.getMessageType()) {
             case SEND_MESSAGE: {
-                //pod message znajdzie sie normalna wiadomosc
                 factoryNewMessage = new MessageFactory();
 
                 //check if user sent empty message
                 if (factoryCreated.getMessage().length() == 0){
                     factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
-                    factoryNewMessage.setMessage("@@@ EMPTY MESSAGE CANNOT BE SENT");
+                    factoryNewMessage.setMessage("SERVER: EMPTY MESSAGE CANNOT BE SENT");
                     sendMessageToUser(userModel, factoryNewMessage);
                     return;
                 }
@@ -65,14 +60,15 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 //check if user sent spam
                 if (factoryCreated.getMessage().length() > 256){
                     factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
-                    factoryNewMessage.setMessage("@@@ MESSAGE CANNOT BY LONGER THAN 256 LETTERS");
+                    factoryNewMessage.setMessage("SERVER: MESSAGE CANNOT BY LONGER THAN 256 LETTERS");
                     sendMessageToUser(userModel, factoryNewMessage);
                     break;
                 }
 
+                //check VULGARISMS
                 if (isVulgarityAbsent(factoryCreated.getMessage())){
                     factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
-                    factoryNewMessage.setMessage("@@@ MESSAGE SUSPEND, REASON = VULGARISM DETECTED.. ");
+                    factoryNewMessage.setMessage("SERVER: MESSAGE SUSPEND, REASON = VULGARISM DETECTED.. ");
                     sendMessageToUser(userModel, factoryNewMessage);
                     return;
                 }
@@ -85,34 +81,44 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                     return;
                 }
 
-                factoryNewMessage.setMessage(userModel.getNick() + ": " + factoryCreated.getMessage()); // umieszczamy przed wiadomoscia nick wysylajacego
+                //set nick before message
+                factoryNewMessage.setMessage(userModel.getNick() + ": " + factoryCreated.getMessage());
                 factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
                 sendMessageToAll(factoryNewMessage);
                 break;
             }
 
             case SET_NICK:{
-                // pod message znajdzie sie nick
                 factoryNewMessage = new MessageFactory();
                 if (isVulgarityAbsent(factoryCreated.getMessage())){
                     factoryNewMessage.setMessageType(MessageFactory.MessageType.NICK_NOT_FREE);
-                    factoryNewMessage.setMessage("@@@ NICK CONTAIN VULGARISM, IT COULDN'T BE.. ");
+                    factoryNewMessage.setMessage("SERVER: NICK CONTAIN VULGARISM, IT COULDN'T BE.. ");
+                    sendMessageToUser(userModel, factoryNewMessage);
+                    return;
+                }
+
+                factoryNewMessage = new MessageFactory();
+                if (factoryCreated.getMessage().equals("SERVER")){
+                    factoryNewMessage.setMessageType(MessageFactory.MessageType.NICK_NOT_FREE);
+                    factoryNewMessage.setMessage("SERVER: NICK BELONG TO THE SERVER, IT COULDN'T BE.. ");
                     sendMessageToUser(userModel, factoryNewMessage);
                     return;
                 }
 
                 if (!isNickFree(factoryCreated.getMessage())){
                     factoryNewMessage.setMessageType(MessageFactory.MessageType.NICK_NOT_FREE);
-                    factoryNewMessage.setMessage("@@@ NICK IS ALREADY TAKEN MY FRIEND..");
+                    factoryNewMessage.setMessage("SERVER: NICK IS ALREADY TAKEN MY FRIEND..");
                     sendMessageToUser(userModel, factoryNewMessage);
                     return;
                 }
                 sendPacket(factoryCreated.getMessage(), MessageFactory.MessageType.USER_JOIN);
                 userModel.setNick(factoryCreated.getMessage());
                 factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
-                factoryNewMessage.setMessage("@@@ NICK HAS BEEN SET \n@@@ TO SEND MESSAGE PRESS 'ENTER' " +
-                        "\n@@@ MESSAGES CANNOT BE LONGER THAN 256 LETTERS! " +
-                        "\n@@@ TO VIEW ALL ACTIVE USERS ON CHAT TYPE '/users' ");
+                factoryNewMessage.setMessage(
+                        "SERVER: NICK HAS BEEN SET " +
+                        "\nSERVER: TO SEND MESSAGE PRESS 'ENTER' " +
+                        "\nSERVER: MESSAGES CANNOT BE LONGER THAN 256 LETTERS! " +
+                        "\nSERVER: TO VIEW ALL ACTIVE USERS ON CHAT TYPE '/users' ");
                 sendMessageToUser(userModel, factoryNewMessage);
                 break;
             }
@@ -131,14 +137,14 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
 
     private String showOnlineUsers(){
         StringBuilder builder = new StringBuilder();
-        builder.append("@@@ ON-LINE USERS: ");
+        builder.append("SERVER: ON-LINE USERS: ");
         userList.values().forEach(s-> builder.append(s.getNick() + "; "));
         return builder.toString();
     }
 
     private boolean isNickFree(String nick){
         for(UserModel userModel : userList.values()){
-            if (userModel.getNick() != null & nick.equals(userModel.getNick())){ // uzytkownik uruchamiajac aplikacje bedziue mial nick null dopoki nie ustali innego
+            if (userModel.getNick() != null & nick.equals(userModel.getNick())){
                 return false;
             }
         }
@@ -188,48 +194,9 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
         }
     }
 
-
-
-
-//        if (userModel.getNick() == null){ // sprawdza czy user nie ma nicku
-//
-//            //wykluczamy nicki dluzsze niz 15 znakow
-//            if (message.getPayload().length() > 15){
-//                userModel.getSession().sendMessage(new TextMessage("Nick should have maximum 15 characters, try again.."));
-//                return;
-//            }
-//
-//            //sprawdzamy czy nick juz nie jest zajety w mapie naszych nickow
-//            for(UserModel localNick : userList.values()){
-//                if (localNick.getNick() != null && localNick.getNick().equals(message.getPayload()) ){
-//                    userModel.getSession().sendMessage(new TextMessage("Nick already used try again.."));
-//                    return;
-//                }
-//            }
-//
-//            userModel.setNick(message.getPayload());
-//
-//            System.out.println("nick zapisany " + userModel.getNick());
-//
-//            userModel.getSession().sendMessage(new TextMessage("Nick has been seted!"));
-//            return;
-//        }
-
-//        userList.values().forEach(s -> { //i do kazdego wysylamy wiadomosc
-//                    try {
-//                        TextMessage newMessage =
-//                                new TextMessage(userModel.getNick() + ": " + message.getPayload());
-//                        s.getSession().sendMessage(newMessage);
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                });
-//    }
-
-    //uzytkownik opuszcza
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        UserModel userModel = userList.get(session.getId()); //zbieramy id usera
+        UserModel userModel = userList.get(session.getId());
         sendPacket(userModel.getNick(), MessageFactory.MessageType.USER_LEFT);
         userList.remove(session.getId());
     }

@@ -3,6 +3,9 @@ package pl.mareksowa.SerwerChat.models;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+/**
+ * Class responsible for managing messages
+ */
 public class MessageFactory {
 
     public static transient Gson GSON = new GsonBuilder().create();
