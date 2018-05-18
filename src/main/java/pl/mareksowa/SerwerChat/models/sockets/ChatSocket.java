@@ -92,7 +92,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 factoryNewMessage = new MessageFactory();
                 if (isVulgarityAbsent(factoryCreated.getMessage())){
                     factoryNewMessage.setMessageType(MessageFactory.MessageType.NICK_NOT_FREE);
-                    factoryNewMessage.setMessage("SERVER: NICK CONTAIN VULGARISM, IT COULDN'T BE.. ");
+                    factoryNewMessage.setMessage("SERVER: NICK CONTAIN VULGARISM, IT COULDN'T BE... ");
                     sendMessageToUser(userModel, factoryNewMessage);
                     return;
                 }
@@ -100,14 +100,14 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 factoryNewMessage = new MessageFactory();
                 if (factoryCreated.getMessage().equals("SERVER")){
                     factoryNewMessage.setMessageType(MessageFactory.MessageType.NICK_NOT_FREE);
-                    factoryNewMessage.setMessage("SERVER: NICK BELONG TO THE SERVER, IT COULDN'T BE.. ");
+                    factoryNewMessage.setMessage("SERVER: NICK BELONG TO THE SERVER, IT COULDN'T BE... ");
                     sendMessageToUser(userModel, factoryNewMessage);
                     return;
                 }
 
                 if (!isNickFree(factoryCreated.getMessage())){
                     factoryNewMessage.setMessageType(MessageFactory.MessageType.NICK_NOT_FREE);
-                    factoryNewMessage.setMessage("SERVER: NICK IS ALREADY TAKEN MY FRIEND..");
+                    factoryNewMessage.setMessage("SERVER: NICK IS ALREADY TAKEN MY FRIEND...");
                     sendMessageToUser(userModel, factoryNewMessage);
                     return;
                 }
