@@ -123,7 +123,11 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 if (factoryCreated.getMessage().length()>7){
                     if (factoryCreated.getMessage().substring(0,7).equals("/block ")){
                         currentUserNick = factoryCreated.getMessage().substring(7, factoryCreated.getMessage().length());
-                        if (chatManager.isUserPresent(currentUserNick, userList)) {
+                        if (currentUserNick.equals(userModel.getNick())){
+                            factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
+                            factoryNewMessage.setMessage("SERVER: you cannot block yourself.. ");
+                            chatManager.sendMessageToUser(userModel, factoryNewMessage);
+                        } else if (chatManager.isUserPresent(currentUserNick, userList)) {
                             factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
                             userModel.addBlockedUser(chatManager.getUserModelAfterNick(currentUserNick, userList));
                             factoryNewMessage.setMessage("SERVER: user (" + currentUserNick + ") has been blocked");
