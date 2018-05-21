@@ -159,7 +159,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
             case SET_NICK:{
                 factoryNewMessage = new MessageFactory();
                 if (chatManager.isVulgarityAbsent(factoryCreated.getMessage())){
-                    chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
+                    chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.NICK_NOT_FREE,
                             "SERVER: NICK CONTAIN VULGARISM, IT COULDN'T BE... ");
                     return;
                 }
@@ -168,10 +168,9 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                         factoryCreated.getMessage().toLowerCase().equals("server") ||
                         factoryCreated.getMessage().toLowerCase().equals("list") ||
                         factoryCreated.getMessage().toLowerCase().equals("reset")){
-                    chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
+                    chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.NICK_NOT_FREE,
                             "SERVER: INVALID NICK OR ITS HAS BEEN ALREADY TAKEN..");
                     return;
-
                 }
 
                 //get IP
@@ -188,7 +187,6 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 break;
             }
             case NICK_NOT_FREE:
-                System.out.println("tutaj");
                 break;
         }
     }

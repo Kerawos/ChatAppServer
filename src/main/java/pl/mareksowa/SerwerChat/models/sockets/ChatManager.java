@@ -6,7 +6,6 @@ import pl.mareksowa.SerwerChat.models.MessageFactory;
 import pl.mareksowa.SerwerChat.models.UserModel;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,7 @@ public class ChatManager {
 
     public void sendPacketToUser(UserModel userModel, MessageFactory.MessageType messageType, String message){
         MessageFactory messageFactory = new MessageFactory();
-        messageFactory.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
+        messageFactory.setMessageType(messageType);
         messageFactory.setMessage(message);
         sendMessageToUser(userModel, messageFactory);
     }
