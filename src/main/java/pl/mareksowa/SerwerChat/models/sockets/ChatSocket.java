@@ -42,6 +42,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String ipAd = null;
+        String currentUser = null;
         UserModel userModel = userList.get(session.getId());
         Type factory = new TypeToken<MessageFactory>() {}.getType();
         //pack message to Json format
@@ -61,9 +62,9 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 }
 
                 //check if user sent spam
-                if (factoryCreated.getMessage().length() > 256){
+                if (factoryCreated.getMessage().length() > 140){
                     factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
-                    factoryNewMessage.setMessage("SERVER: MESSAGE CANNOT BY LONGER THAN 256 LETTERS");
+                    factoryNewMessage.setMessage("SERVER: MESSAGE CANNOT BY LONGER THAN 140 LETTERS");
                     sendMessageToUser(userModel, factoryNewMessage);
                     break;
                 }
@@ -83,6 +84,23 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                     sendMessageToUser(userModel, factoryNewMessage);
                     return;
                 }
+
+                //get history of user
+                if (factoryCreated.getMessage().substring(0, 9).equals("/history ")){
+                    currentUser = factoryCreated.getMessage().substring(10);
+                    if (isUserPresent(currentUser)){
+                        factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
+                        factoryNewMessage.setMessage(showHistory(getUserModelAfterNick(currentUser)).toString());
+                        sendMessageToUser(userModel, factoryNewMessage);
+                    }
+
+
+                    factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
+                    factoryNewMessage.setMessage(showOnlineUsers());
+                    sendMessageToUser(userModel, factoryNewMessage);
+                    return;
+                }
+
 
                 //set nick before message
                 factoryNewMessage.setMessage(userModel.getNick() + ": " + factoryCreated.getMessage());
@@ -132,7 +150,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 factoryNewMessage.setMessage(
                         "SERVER: NICK HAS BEEN SET " +
                         "\nSERVER: TO SEND MESSAGE PRESS 'ENTER' " +
-                        "\nSERVER: MESSAGES CANNOT BE LONGER THAN 256 LETTERS! " +
+                        "\nSERVER: MESSAGES CANNOT BE LONGER THAN 140 LETTERS! " +
                         "\nSERVER: TO VIEW ALL ACTIVE USERS ON CHAT TYPE '/users' ");
                 sendMessageToUser(userModel, factoryNewMessage);
                 break;
@@ -157,6 +175,40 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
         builder.append("SERVER: ON-LINE USERS: ");
         userList.values().forEach(s-> builder.append(s.getNick() + "; "));
         return builder.toString();
+    }
+
+    private void addMessageToHistory(String message, UserModel userModel){
+        List<String> historyList = userModel.getChatHistory();
+        historyList.add(message);
+        userModel.setChatHistory(historyList);
+    }
+
+    private boolean isUserPresent(String userNick){
+        for(Map.Entry<String, UserModel> element : userList.entrySet()){
+            if (element.getValue().getNick().equals(userNick)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> showHistory(UserModel userModel){
+        for(Map.Entry<String, UserModel> element : userList.entrySet()){
+            if (element.getValue().getNick().equals(userModel.getNick())){
+                return userModel.getChatHistory();
+            }
+        }
+        throw new IllegalArgumentException("invalid user");
+    }
+
+    private UserModel getUserModelAfterNick(String userNick){
+        UserModel userModel;
+        for(Map.Entry<String, UserModel> element : userList.entrySet()){
+            if (element.getValue().getNick().equals(userNick)){
+                return element.getValue();
+            }
+        }
+        throw new IllegalArgumentException("no user found");
     }
 
     private boolean isNickFree(String nick){
