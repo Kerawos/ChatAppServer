@@ -6,9 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @EnableAutoConfiguration
-public class StarterServerChatApplication {
+public class Main {
 
 	public static void main(String[] args) {
-		SpringApplication.run(StarterServerChatApplication.class, args);
+		SpringApplication.run(Main.class, args);
 	}
 }
