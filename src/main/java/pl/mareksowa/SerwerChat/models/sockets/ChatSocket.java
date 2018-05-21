@@ -14,6 +14,8 @@ import pl.mareksowa.SerwerChat.models.UserModel;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 
 
@@ -39,6 +41,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        String ipAd = null;
         UserModel userModel = userList.get(session.getId());
         Type factory = new TypeToken<MessageFactory>() {}.getType();
         //pack message to Json format
@@ -88,6 +91,12 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 break;
             }
 
+            case USER_JOIN:
+                break;
+            case USER_LEFT:
+                break;
+            case GET_ALL_USERS:
+                break;
             case SET_NICK:{
                 factoryNewMessage = new MessageFactory();
                 if (isVulgarityAbsent(factoryCreated.getMessage())){
@@ -111,7 +120,13 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                     sendMessageToUser(userModel, factoryNewMessage);
                     return;
                 }
-                sendPacket(factoryCreated.getMessage(), MessageFactory.MessageType.USER_JOIN);
+
+                try {
+                    ipAd = String.valueOf(InetAddress.getLocalHost());
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+                sendPacket(factoryCreated.getMessage() + "(" + ipAd + ")", MessageFactory.MessageType.USER_JOIN);
                 userModel.setNick(factoryCreated.getMessage());
                 factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
                 factoryNewMessage.setMessage(
@@ -122,6 +137,8 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 sendMessageToUser(userModel, factoryNewMessage);
                 break;
             }
+            case NICK_NOT_FREE:
+                break;
         }
     }
 
