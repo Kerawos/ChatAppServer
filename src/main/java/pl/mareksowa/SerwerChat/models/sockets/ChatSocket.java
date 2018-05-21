@@ -99,11 +99,11 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                                     + chatManager.showHistory(chatManager.getUserModelAfterNick(currentUserNick,
                                         userList), userList).toString());
                             chatManager.sendMessageToUser(userModel, factoryNewMessage);
-                            return;
+                        } else {
+                            factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
+                            factoryNewMessage.setMessage("SERVER: given user (" + currentUserNick + ") not exist..-> ");
+                            chatManager.sendMessageToUser(userModel, factoryNewMessage);
                         }
-                        factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
-                        factoryNewMessage.setMessage("SERVER: given user (" + currentUserNick + ") not exist..-> ");
-                        chatManager.sendMessageToUser(userModel, factoryNewMessage);
                         return;
                     }
                 }
@@ -119,8 +119,31 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                     }
                 }
 
-                //todo add follow / block users by users
+                //add user to block list
+                if (factoryCreated.getMessage().length()>7){
+                    if (factoryCreated.getMessage().substring(0,7).equals("/block ")){
+                        currentUserNick = factoryCreated.getMessage().substring(7, factoryCreated.getMessage().length());
+                        if (chatManager.isUserPresent(currentUserNick, userList)) {
+                            factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
+                            userModel.addBlockedUser(chatManager.getUserModelAfterNick(currentUserNick, userList));
+                            factoryNewMessage.setMessage("SERVER: user (" + currentUserNick + ") has been blocked");
+                            chatManager.sendMessageToUser(userModel, factoryNewMessage);
+                        } else {
+                            factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
+                            factoryNewMessage.setMessage("SERVER: given user (" + currentUserNick + ") not exist..-> ");
+                            chatManager.sendMessageToUser(userModel, factoryNewMessage);
+                        }
+                        return;
+                    }
+                }
 
+                //show block list
+                if (factoryCreated.getMessage().equals("/blockedList")){
+                    factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
+                    factoryNewMessage.setMessage("SERVER: blocked list :\n" + chatManager.showBlockedUserNicks(userModel, userList));
+                    chatManager.sendMessageToUser(userModel, factoryNewMessage);
+                    return;
+                }
 
                 //send message and set nick before message
                 userModel.addMessageToHistory(factoryCreated.getMessage());

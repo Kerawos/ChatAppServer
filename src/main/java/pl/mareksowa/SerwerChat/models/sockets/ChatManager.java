@@ -7,6 +7,7 @@ import pl.mareksowa.SerwerChat.models.MessageFactory;
 import pl.mareksowa.SerwerChat.models.UserModel;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,18 @@ public class ChatManager {
             }
         }
         throw new IllegalArgumentException("invalid user");
+    }
+
+    public List<String> showBlockedUserNicks(UserModel userModel, Map<String, UserModel> userList){
+        List<String> blockedUsers = new ArrayList<>();
+        for(Map.Entry<String, UserModel> element : userList.entrySet()){
+            if (element.getValue().getNick().equals(userModel.getNick())){
+                for (UserModel model : element.getValue().getBlockedList()) {
+                    blockedUsers.add(model.getNick());
+                }
+            }
+        }
+        return blockedUsers;
     }
 
     public UserModel getUserModelAfterNick(String userNick, Map<String, UserModel> userList){
@@ -112,4 +125,5 @@ public class ChatManager {
             }
         }
     }
+
 }
