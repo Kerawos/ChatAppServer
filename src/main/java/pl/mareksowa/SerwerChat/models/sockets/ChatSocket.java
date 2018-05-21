@@ -90,7 +90,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 }
 
                 //get history of user
-                if (factoryCreated.getMessage().length()>10){
+                if (factoryCreated.getMessage().length()>8){
                     if (factoryCreated.getMessage().substring(0,9).equals("/history ")){
                         currentUserNick = factoryCreated.getMessage().substring(9, factoryCreated.getMessage().length());
                         if (chatManager.isUserPresent(currentUserNick, userList)){
@@ -107,6 +107,20 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                         return;
                     }
                 }
+
+                //reset block list
+                if (factoryCreated.getMessage().length()>11){
+                    if (factoryCreated.getMessage().substring(0,12).equals("/block reset")){
+                        userModel.resetBlockedList();
+                        factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
+                        factoryNewMessage.setMessage("SERVER: block list has been reset");
+                        chatManager.sendMessageToUser(userModel, factoryNewMessage);
+                        return;
+                    }
+                }
+
+                //todo add follow / block users by users
+
 
                 //send message and set nick before message
                 userModel.addMessageToHistory(factoryCreated.getMessage());
