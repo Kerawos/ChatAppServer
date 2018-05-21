@@ -1,6 +1,5 @@
 package pl.mareksowa.SerwerChat.models.sockets;
 
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import pl.mareksowa.SerwerChat.models.MessageFactory;
@@ -12,6 +11,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * Service help managing messages
+ */
 @Service
 public class ChatManager {
 
@@ -116,14 +119,26 @@ public class ChatManager {
         }
     }
 
-    public void sendMessageThruFilter(MessageFactory factory, Map<String, UserModel> userList){
+
+    public void sendMessageThruFilter(UserModel userModelSender, MessageFactory factory, Map<String, UserModel> userList){
         for(UserModel user : userList.values()){
-            try {
-                user.getSession().sendMessage(new TextMessage(convertFactoryToString(factory)));
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (!isBlockedUser(user, userModelSender)){ // will be faster to have following list instead of blocked list
+                try {
+                    user.getSession().sendMessage(new TextMessage(convertFactoryToString(factory)));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
+    }
+
+    public boolean isBlockedUser(UserModel userModel, UserModel potentialBlockedUser){
+        for (UserModel model : userModel.getBlockedList()) {
+            if (model.equals(potentialBlockedUser)){
+                return true;
+            }
+        }
+        return false;
     }
 
 }

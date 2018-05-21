@@ -153,7 +153,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 userModel.addMessageToHistory(factoryCreated.getMessage());
                 factoryNewMessage.setMessage(userModel.getNick() + ": " + factoryCreated.getMessage());
                 factoryNewMessage.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
-                chatManager.sendMessageToAll(factoryNewMessage, userList);
+                chatManager.sendMessageThruFilter(userModel,factoryNewMessage, userList);
                 break;
             }
             case USER_JOIN:
