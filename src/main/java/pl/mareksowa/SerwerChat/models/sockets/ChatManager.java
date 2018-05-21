@@ -171,14 +171,14 @@ public class ChatManager {
     public String getHelpMenu(String nick){
         return "*****\n" +
                 "SERVER: NICK HAS BEEN SET (" + nick + ")\n" +
-                "SERVER: TO SEND MESSAGE PRESS 'ENTER' " +
+                "SERVER: TO SEND MESSAGE PRESS 'ENTER' \n" +
                 "SERVER: MESSAGES CANNOT BE LONGER THAN 140 LETTERS! \n" +
                 "SERVER: TO VIEW ALL ACTIVE USERS ON CHAT TYPE '/users' \n" +
                 "SERVER: TO VIEW HISTORY OF USER: '/history (user nick)' \n" +
                 "SERVER: TO BLOCK USER: '/block (user nick)' \n" +
                 "SERVER: TO VIEW YOUR BLOCK LIST: '/block list' \n" +
                 "SERVER: TO RESET YOUR BLOCK LIST: '/block reset' \n" +
-                "SERVER: TO DISPLAY THIS MENU: '/help' \n +" +
+                "SERVER: TO DISPLAY THIS MENU: '/help' \n" +
                 "*****";
     }
 

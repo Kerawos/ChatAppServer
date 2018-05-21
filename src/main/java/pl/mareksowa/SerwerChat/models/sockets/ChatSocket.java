@@ -155,12 +155,11 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
             case USER_JOIN:
                 break;
             case USER_LEFT:
-                System.out.println("handling case USER_LEFT");
                 break;
             case SET_NICK:{
                 factoryNewMessage = new MessageFactory();
                 if (chatManager.isVulgarityAbsent(factoryCreated.getMessage())){
-                    chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
+                    chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.NICK_NOT_FREE,
                             "SERVER: NICK CONTAIN VULGARISM, IT COULDN'T BE... ");
                     return;
                 }
@@ -169,9 +168,11 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                         factoryCreated.getMessage().toLowerCase().equals("server") ||
                         factoryCreated.getMessage().toLowerCase().equals("list") ||
                         factoryCreated.getMessage().toLowerCase().equals("reset")){
-                    chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
+                    chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.NICK_NOT_FREE,
                             "SERVER: INVALID NICK OR ITS HAS BEEN ALREADY TAKEN..");
+                    System.out.println("dupa jasia");
                     return;
+
                 }
 
                 //get IP
@@ -192,12 +193,13 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
         }
     }
 
-
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status){
+        String leftUserNick;
         UserModel userModel = userList.get(session.getId());
-        //userList.remove(session.getId()); //-> not working properly when two users have same IP
-        chatManager.removeUserModelFromUsers(userModel, userList);
-        chatManager.sendPacketToAll(MessageFactory.MessageType.USER_LEFT, " goodbye ", userList);
+        leftUserNick = userModel.getNick();
+        //chatManager.removeUserModelFromUsers(userModel, userList); //-> not working properly when two users have same IP
+        userList.remove(session.getId());
+        chatManager.sendPacketToAll(MessageFactory.MessageType.USER_LEFT, leftUserNick, userList);
     }
 }
