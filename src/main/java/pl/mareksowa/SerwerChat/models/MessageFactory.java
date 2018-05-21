@@ -10,7 +10,7 @@ public class MessageFactory {
 
     public static transient Gson GSON = new GsonBuilder().create();
     public enum MessageType{
-        SEND_MESSAGE, USER_JOIN, USER_LEFT, GET_ALL_USERS, SET_NICK, NICK_NOT_FREE
+        SEND_MESSAGE, NICK_NOT_FREE, USER_JOIN, USER_LEFT, SET_NICK,
     }
 
     private String message;
@@ -18,7 +18,6 @@ public class MessageFactory {
     private MessageType messageType;
 
     public MessageFactory(){
-
     }
 
     public MessageType getMessageType() {
