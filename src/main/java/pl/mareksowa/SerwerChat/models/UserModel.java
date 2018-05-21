@@ -65,7 +65,7 @@ public class UserModel {
         return reverseHistory;
     }
 
-    public void addBlockedUser(UserModel userModel){
+    public void blockUser(UserModel userModel){
         getBlockedList().add(userModel);
     }
 

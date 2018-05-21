@@ -18,6 +18,27 @@ import java.util.Map;
 @Service
 public class ChatManager {
 
+    public void sendPacketToAll(MessageFactory.MessageType messageType, String message, Map<String, UserModel> userList){
+        MessageFactory messageFactory = new MessageFactory();
+        messageFactory.setMessageType(messageType);
+        messageFactory.setMessage(message);
+        sendMessageToAll(messageFactory, userList);
+    }
+
+    public void sendPacketToUser(UserModel userModel, MessageFactory.MessageType messageType, String message){
+        MessageFactory messageFactory = new MessageFactory();
+        messageFactory.setMessageType(MessageFactory.MessageType.SEND_MESSAGE);
+        messageFactory.setMessage(message);
+        sendMessageToUser(userModel, messageFactory);
+    }
+
+    public void sendPacketThruFilter(UserModel userModel, MessageFactory.MessageType messageType, String message,  Map<String, UserModel> userList){
+        MessageFactory messageFactory = new MessageFactory();
+        messageFactory.setMessageType(messageType);
+        messageFactory.setMessage(message);
+        sendMessageThruFilter(userModel, messageFactory, userList);
+    }
+
     public boolean isVulgarityAbsent(String text){
         List<String> vulgarity = Arrays.asList("kurwa", "cipa", "chuj");
         for (String s : vulgarity) {
@@ -30,7 +51,7 @@ public class ChatManager {
 
     public String showOnlineUsers(Map<String, UserModel> userList){
         StringBuilder builder = new StringBuilder();
-        builder.append("SERVER: ON-LINE USERS: ");
+        builder.append("SERVER: ON-LINE USERS: \n");
         userList.values().forEach(s-> builder.append(s.getNick() + "; "));
         return builder.toString();
     }
@@ -53,20 +74,17 @@ public class ChatManager {
         throw new IllegalArgumentException("invalid user");
     }
 
-    public List<String> showBlockedUserNicks(UserModel userModel, Map<String, UserModel> userList){
-        List<String> blockedUsers = new ArrayList<>();
+    public String showBlockedUserNicks(UserModel userModel, Map<String, UserModel> userList){
+        StringBuilder builder = new StringBuilder();
         for(Map.Entry<String, UserModel> element : userList.entrySet()){
             if (element.getValue().getNick().equals(userModel.getNick())){
-                for (UserModel model : element.getValue().getBlockedList()) {
-                    blockedUsers.add(model.getNick());
-                }
+                element.getValue().getBlockedList().forEach(um->builder.append(um.getNick() + ";"));
             }
         }
-        return blockedUsers;
+        return builder.toString();
     }
 
     public UserModel getUserModelAfterNick(String userNick, Map<String, UserModel> userList){
-        UserModel userModel;
         for(Map.Entry<String, UserModel> element : userList.entrySet()){
             if (element.getValue().getNick().equals(userNick)){
                 return element.getValue();
@@ -101,9 +119,9 @@ public class ChatManager {
         }
     }
 
-    public void sendMessageToUser(UserModel user, MessageFactory factory){
+    public void sendMessageToUser(UserModel userModel, MessageFactory factory){
         try {
-            user.getSession().sendMessage(new TextMessage(convertFactoryToString(factory)));
+            userModel.getSession().sendMessage(new TextMessage(convertFactoryToString(factory)));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -118,7 +136,6 @@ public class ChatManager {
             }
         }
     }
-
 
     public void sendMessageThruFilter(UserModel userModelSender, MessageFactory factory, Map<String, UserModel> userList){
         for(UserModel user : userList.values()){
@@ -139,6 +156,30 @@ public class ChatManager {
             }
         }
         return false;
+    }
+
+    public void removeUserModelFromUsers(UserModel userToDelete, Map<String, UserModel> users){
+        for(UserModel user: users.values()){
+            if (user.equals(userToDelete)){
+                users.remove(user);
+                return;
+            }
+        }
+        throw new IllegalArgumentException("User not found");
+    }
+
+    public String getHelpMenu(String nick){
+        return "*****\n" +
+                "SERVER: NICK HAS BEEN SET (" + nick + ")\n" +
+                "SERVER: TO SEND MESSAGE PRESS 'ENTER' " +
+                "SERVER: MESSAGES CANNOT BE LONGER THAN 140 LETTERS! \n" +
+                "SERVER: TO VIEW ALL ACTIVE USERS ON CHAT TYPE '/users' \n" +
+                "SERVER: TO VIEW HISTORY OF USER: '/history (user nick)' \n" +
+                "SERVER: TO BLOCK USER: '/block (user nick)' \n" +
+                "SERVER: TO VIEW YOUR BLOCK LIST: '/block list' \n" +
+                "SERVER: TO RESET YOUR BLOCK LIST: '/block reset' \n" +
+                "SERVER: TO DISPLAY THIS MENU: '/help' \n +" +
+                "*****";
     }
 
 }
