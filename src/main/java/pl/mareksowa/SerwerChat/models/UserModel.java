@@ -57,14 +57,6 @@ public class UserModel {
         getChatHistory().add(message);
     }
 
-    public List<String> getChatHistoryReverseOrder(){
-        List<String> reverseHistory = new ArrayList<>();
-        for (int i = 0; i < getChatHistory().size(); i++) {
-            reverseHistory.add(getChatHistory().get(getChatHistory().size()-i-1));
-        }
-        return reverseHistory;
-    }
-
     public void blockUser(UserModel userModel){
         getBlockedList().add(userModel);
     }

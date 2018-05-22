@@ -64,10 +64,15 @@ public class ChatManager {
         return false;
     }
 
-    public List<String> showHistory(UserModel userModel, Map<String, UserModel> userList){
+    public String showHistory(UserModel userModel, Map<String, UserModel> userList){
+        StringBuilder sb = new StringBuilder();
         for(Map.Entry<String, UserModel> element : userList.entrySet()){
             if (element.getValue().getNick().equals(userModel.getNick())){
-                return userModel.getChatHistoryReverseOrder();
+                //get reverse order of messages
+                for (int i = 0; i < element.getValue().getChatHistory().size(); i++) {
+                    sb.append(element.getValue().getChatHistory().get(element.getValue().getChatHistory().size()-i-1) + "; ");
+                }
+                return sb.toString();
             }
         }
         throw new IllegalArgumentException("invalid user");

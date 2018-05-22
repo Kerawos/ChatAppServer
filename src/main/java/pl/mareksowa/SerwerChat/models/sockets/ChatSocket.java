@@ -21,7 +21,7 @@ import java.util.*;
 
 
 /**
- * Class responsible for chat logic
+ * Class responsible for message handling
  */
 @EnableWebSocket
 @Configuration
@@ -46,23 +46,22 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         String clientIP = null;
-        String currentUserNick = null;
+        String currentUserNick;
         UserModel userModel = userList.get(session.getId());
         Type factory = new TypeToken<MessageFactory>() {}.getType();
 
-        //pack message to Json format
+        //received pack message as Json
         MessageFactory factoryCreated = MessageFactory.GSON.fromJson(message.getPayload(), factory);
-        MessageFactory factoryNewMessage;
+        MessageFactory factoryNewMessage = new MessageFactory();
 
         switch (factoryCreated.getMessageType()) {
             case SEND_MESSAGE: {
-                factoryNewMessage = new MessageFactory();
 
                 //check if user sent empty message
                 if (factoryCreated.getMessage().length() == 0){
                     chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
                             "SERVER: EMPTY MESSAGE CANNOT BE SENT");
-                    return;
+                    break;
                 }
 
                 //check if user sent spam
@@ -76,14 +75,14 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 if (chatManager.isVulgarityAbsent(factoryCreated.getMessage())){
                     chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
                             "SERVER: MESSAGE SUSPEND, REASON = VULGARISM DETECTED.. ");
-                    return;
+                    break;
                 }
 
-                //1st type of command
+                //get list of users
                 if (factoryCreated.getMessage().equals("/users")){
                     chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
                             chatManager.showOnlineUsers(userList));
-                    return;
+                    break;
                 }
 
                 //get history of user
@@ -94,12 +93,12 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                             chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
                                     "SERVER: User-> " + currentUserNick + " history: \n"
                                             + chatManager.showHistory(chatManager.getUserModelAfterNick(currentUserNick,
-                                            userList), userList).toString());
+                                            userList), userList));
                         } else {
                             chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
                                     "SERVER: given user (" + currentUserNick + ") not exist..-> ");
                         }
-                        return;
+                        break;
                     }
                 }
 
@@ -109,7 +108,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                         userModel.resetBlockedList();
                         chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
                                 "SERVER: block list has been reset");
-                        return;
+                        break;
                     }
                 }
 
@@ -117,7 +116,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                 if (factoryCreated.getMessage().equals("/block list")){
                     chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
                             "SERVER: blocked list :\n" + chatManager.showBlockedUserNicks(userModel, userList));
-                    return;
+                    break;
                 }
 
                 //add user to block list
@@ -135,7 +134,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                             chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.SEND_MESSAGE,
                                     "SERVER: given user (" + currentUserNick + ") not exist..-> ");
                         }
-                        return;
+                        break;
                     }
                 }
 
@@ -157,11 +156,12 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
             case USER_LEFT:
                 break;
             case SET_NICK:{
-                factoryNewMessage = new MessageFactory();
+
+                //check vulgarity of nick
                 if (chatManager.isVulgarityAbsent(factoryCreated.getMessage())){
                     chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.NICK_NOT_FREE,
                             "SERVER: NICK CONTAIN VULGARISM, IT COULDN'T BE... ");
-                    return;
+                    break;
                 }
 
                 if (!chatManager.isNickFree(factoryCreated.getMessage(), userList) ||
@@ -170,10 +170,10 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
                         factoryCreated.getMessage().toLowerCase().equals("reset")){
                     chatManager.sendPacketToUser(userModel, MessageFactory.MessageType.NICK_NOT_FREE,
                             "SERVER: INVALID NICK OR ITS HAS BEEN ALREADY TAKEN..");
-                    return;
+                    break;
                 }
 
-                //get IP
+                //get IP to show to everyone
                 try {
                     clientIP = String.valueOf(InetAddress.getLocalHost());
                 } catch (UnknownHostException e) {
