@@ -12,8 +12,6 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import pl.mareksowa.SerwerChat.models.MessageFactory;
 import pl.mareksowa.SerwerChat.models.UserModel;
-
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.UnknownHostException;

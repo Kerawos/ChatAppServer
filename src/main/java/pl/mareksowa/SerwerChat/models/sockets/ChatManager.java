@@ -4,12 +4,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import pl.mareksowa.SerwerChat.models.MessageFactory;
 import pl.mareksowa.SerwerChat.models.UserModel;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
 
 /**
  * Service help managing messages

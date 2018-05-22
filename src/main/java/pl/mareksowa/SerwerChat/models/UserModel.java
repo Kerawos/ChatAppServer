@@ -1,7 +1,6 @@
 package pl.mareksowa.SerwerChat.models;
 
 import org.springframework.web.socket.WebSocketSession;
-
 import java.util.ArrayList;
 import java.util.List;
 
