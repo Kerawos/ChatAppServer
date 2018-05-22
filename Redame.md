@@ -19,10 +19,10 @@ Spring Boot, Web Socket, JavaFX, Json, MVC, Observer, Factory
 
 #How To
  1. Download Java JRE and install it
- 2. Download Server: https://github.com/Kerawos/ChatAppServer/blob/master/download/SerwerChat.jar
- 3. Download Client: https://github.com/Kerawos/ChatAppClientFX/blob/master/Download/ChatApp.jar
- 4. Run Server first: 'ServerChar.jar'
- 5. Run Client: 'ChatAppClientFX.jar'
+ 2. Clone Server or download: https://github.com/Kerawos/ChatAppServer/blob/master/download/SerwerChat.jar
+ 3. Clone Client or download: https://github.com/Kerawos/ChatAppClientFX/blob/master/Download/ChatApp.jar
+ 4. First run cloned Server from your IDE or from jar: 'ServerChar.jar'
+ 5. Second run cloned Client from your IDE or from jar: 'ChatAppClientFX.jar'
     - set IP of server, by default will be IP of your PC, if you wanna connect to someone else server then read its IP (by default IP will be show at the first line after log via client)
     - set your nickname
     - enjoy applications
